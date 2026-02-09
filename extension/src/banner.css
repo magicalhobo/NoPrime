@@ -1,0 +1,76 @@
+#no-prime-banner {
+  position: relative;
+  z-index: 999999;
+  background: linear-gradient(135deg, #1a6b3c, #238b4e);
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  padding: 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.no-prime-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.no-prime-msg {
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+.no-prime-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.no-prime-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.no-prime-btn:active {
+  transform: scale(0.97);
+}
+
+.no-prime-btn-primary {
+  background: #fff !important;
+  color: #1a6b3c !important;
+  padding: 8px 18px;
+}
+
+.no-prime-btn-primary:hover {
+  background: #e0f5e9 !important;
+  text-decoration: none;
+}
+
+.no-prime-btn-dismiss {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  padding: 0;
+}
+
+.no-prime-btn-dismiss:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

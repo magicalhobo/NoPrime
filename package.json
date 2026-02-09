@@ -1,0 +1,18 @@
+{
+  "name": "no-prime",
+  "version": "1.0.0",
+  "description": "A Chrome extension that detects when you're on an Amazon product page and offers to redirect you to the brand's own store, so you can buy direct from the manufacturer.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "playwright": "^1.58.2",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
