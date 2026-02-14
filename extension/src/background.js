@@ -59,13 +59,19 @@ chrome.action.onClicked.addListener(async () => {
       // Restore badge from cached product data
       const product = await getProduct(tab.id);
       if (product) {
+        const badgeColor = product.matchType === "suspect-brand" ? "#dc2626"
+          : product.matchType === "search-fallback" ? "#b45309"
+          : "#1a6b3c";
+        const badgeText = product.matchType === "suspect-brand" ? "⚠"
+          : product.matchType === "search-fallback" ? "?"
+          : "✓";
         chrome.action.setBadgeBackgroundColor({
           tabId: tab.id,
-          color: product.matchType === "exact" ? "#1a6b3c" : "#b45309",
+          color: badgeColor,
         });
         chrome.action.setBadgeText({
           tabId: tab.id,
-          text: product.matchType === "exact" ? "✓" : "?",
+          text: badgeText,
         });
       }
     } else {
@@ -102,11 +108,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       if (!enabled) return;
       chrome.action.setBadgeBackgroundColor({
         tabId,
-        color: matchType === "exact" ? "#1a6b3c" : "#b45309",
+        color: matchType === "suspect-brand" ? "#dc2626"
+          : matchType === "search-fallback" ? "#b45309"
+          : "#1a6b3c",
       });
       chrome.action.setBadgeText({
         tabId,
-        text: matchType === "exact" ? "✓" : "?",
+        text: matchType === "suspect-brand" ? "⚠"
+          : matchType === "search-fallback" ? "?"
+          : "✓",
       });
     });
   }

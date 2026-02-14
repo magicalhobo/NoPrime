@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NoPrime",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Displays links to the manufacturer's store on Amazon product pages.",
   "permissions": ["activeTab", "storage", "tabs"],
   "host_permissions": [

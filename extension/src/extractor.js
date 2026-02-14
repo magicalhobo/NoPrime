@@ -113,14 +113,63 @@ function extractDetailField(...labels) {
 }
 
 /**
+ * Detect whether the current product is a book.
+ *
+ * Checks several signals:
+ *   - The breadcrumb / category contains "Books"
+ *   - An ISBN-13 or ISBN-10 is present in the detail tables
+ *   - The page has a #bookDescription or #rpiContainer element
+ *   - The URL contains /dp/ with a 10-digit ISBN-10
+ */
+function detectBook() {
+  // 1. Breadcrumb / category node
+  const breadcrumb = document.querySelector("#wayfinding-breadcrumbs_container, .a-breadcrumb");
+  if (breadcrumb && /\bbooks\b/i.test(breadcrumb.textContent)) return true;
+
+  // 2. Book-specific DOM landmarks
+  if (document.querySelector("#bookDescription, #rpiContainer, #bookEditionBadge, #tmmSwatches")) return true;
+
+  // 3. Detail table contains ISBN
+  const isbn = extractDetailField("ISBN-13", "ISBN-10", "ISBN");
+  if (isbn) return true;
+
+  // 4. Media format switcher mentions Kindle / Paperback / Hardcover
+  const formats = document.querySelector("#tmmSwatches, #mediaTab_heading");
+  if (formats && /\b(kindle|paperback|hardcover|audiobook|mass market)\b/i.test(formats.textContent)) return true;
+
+  return false;
+}
+
+/**
+ * Extract the ISBN-13 (preferred) or ISBN-10 from the product details.
+ */
+function extractISBN() {
+  const isbn13 = extractDetailField("ISBN-13");
+  if (isbn13) return isbn13.replace(/[^0-9X]/gi, "");
+
+  const isbn10 = extractDetailField("ISBN-10");
+  if (isbn10) return isbn10.replace(/[^0-9X]/gi, "");
+
+  // Try to pull a 13-digit ISBN from the page URL or ASIN
+  // (Amazon ASINs for books are often the ISBN-10)
+  const asinMatch = location.pathname.match(/\/(?:dp|gp\/product)\/([0-9]{10})/);
+  if (asinMatch) return asinMatch[1];
+
+  return null;
+}
+
+/**
  * Scrape all useful metadata from the current Amazon product page.
  *
- * @returns {{ brand: string|null, title: string|null, url: string }}
+ * @returns {{ brand: string|null, title: string|null, url: string, isBook: boolean, isbn: string|null }}
  */
 window.NoPrime.extractProductInfo = function extractProductInfo() {
+  const isBook = detectBook();
   return {
     brand: extractBrand(),
     title: extractTitle(),
     url:   location.href,
+    isBook,
+    isbn:  isBook ? extractISBN() : null,
   };
 };

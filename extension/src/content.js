@@ -34,18 +34,37 @@ async function init() {
   const { enabled } = await chrome.storage.sync.get({ enabled: true });
   if (!enabled) return;
 
-  const { extractProductInfo, lookupBrand, buildRedirectUrl, buildSearchFallbackUrl } = window.NoPrime;
+  const { extractProductInfo, lookupBrand, buildRedirectUrl, buildSearchFallbackUrl,
+          buildBarnesNobleUrl, buildLocalBookstoreUrl } = window.NoPrime;
 
   const product = extractProductInfo();
   if (!product.title) return; // Not a real product page
 
+  if (product.isBook) {
+    const bnUrl    = buildBarnesNobleUrl(product.isbn, product.title);
+    const localUrl = buildLocalBookstoreUrl(product.title);
+
+    chrome.runtime.sendMessage({
+      type: "PRODUCT_DETECTED",
+      payload: { ...product, redirectUrl: bnUrl, matchType: "book", storeBrand: null },
+    });
+
+    injectBookBanner(product, bnUrl, localUrl);
+    observeSoftNavigation();
+    return;
+  }
+
+  const { isSuspectBrand } = window.NoPrime;
   const storeEntry = lookupBrand(product.brand);
   let redirectUrl;
-  let matchType; // "exact" | "search-fallback"
+  let matchType; // "brand" | "search-fallback" | "suspect-brand"
 
   if (storeEntry) {
     redirectUrl = buildRedirectUrl(storeEntry, product.title);
-    matchType = "exact";
+    matchType = "brand";
+  } else if (isSuspectBrand(product.brand)) {
+    redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
+    matchType = "suspect-brand";
   } else {
     redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
     matchType = "search-fallback";
@@ -57,7 +76,11 @@ async function init() {
     payload: { ...product, redirectUrl, matchType, storeBrand: storeEntry?.brand || null },
   });
 
-  injectBanner(product, redirectUrl, matchType, storeEntry);
+  if (matchType === "suspect-brand") {
+    injectSuspectBanner(product, redirectUrl);
+  } else {
+    injectBanner(product, redirectUrl, matchType, storeEntry);
+  }
 
   // Watch for Amazon's soft navigation (SPA-like page transitions)
   observeSoftNavigation();
@@ -69,6 +92,7 @@ function injectBanner(product, redirectUrl, matchType, storeEntry) {
 
   const banner = document.createElement("div");
   banner.id = "no-prime-banner";
+  if (matchType === "search-fallback") banner.classList.add("no-prime-fallback");
   banner.setAttribute("role", "alert");
 
   const brandLabel = storeEntry?.brand
@@ -76,7 +100,7 @@ function injectBanner(product, redirectUrl, matchType, storeEntry) {
     : product.brand || "the manufacturer";
 
   const message =
-    matchType === "exact"
+    matchType === "brand"
       ? `This product may be available directly from <strong>${brandLabel}</strong>.`
       : `We couldn't find the store for <strong>${brandLabel}</strong>, but you can search online.`;
 
@@ -85,7 +109,7 @@ function injectBanner(product, redirectUrl, matchType, storeEntry) {
       <span class="no-prime-msg">${message}</span>
       <div class="no-prime-actions">
         <a class="no-prime-btn no-prime-btn-primary" href="${escapeHtml(redirectUrl)}" target="_blank" rel="noopener noreferrer">
-          ${matchType === "exact" ? "Go to " + escapeHtml(capitalize(brandLabel)) : "Search on DuckDuckGo"}
+          ${matchType === "brand" ? "Go to " + escapeHtml(capitalize(brandLabel)) : "Search on DuckDuckGo"}
         </a>
         <button class="no-prime-btn no-prime-btn-dismiss" title="Dismiss">✕</button>
       </div>
@@ -93,6 +117,80 @@ function injectBanner(product, redirectUrl, matchType, storeEntry) {
   `;
 
   // Dismiss handler
+  banner.querySelector(".no-prime-btn-dismiss").addEventListener("click", () => {
+    banner.remove();
+  });
+
+  document.body.prepend(banner);
+}
+
+/**
+ * Inject a book-specific banner with two action links:
+ *   1. Barnes & Noble – deep link by ISBN or title search
+ *   2. DuckDuckGo search for local bookstores carrying this title
+ */
+function injectBookBanner(product, bnUrl, localUrl) {
+  document.getElementById("no-prime-banner")?.remove();
+
+  const banner = document.createElement("div");
+  banner.id = "no-prime-banner";
+  banner.setAttribute("role", "alert");
+
+  const title = escapeHtml(product.title.slice(0, 80));
+
+  banner.innerHTML = `
+    <div class="no-prime-content">
+      <span class="no-prime-msg">
+        This book may be available from other booksellers.
+      </span>
+      <div class="no-prime-actions">
+        <a class="no-prime-btn no-prime-btn-primary" href="${escapeHtml(localUrl)}" target="_blank" rel="noopener noreferrer">
+          Find Local Bookstores
+        </a>
+        <a class="no-prime-btn no-prime-btn-secondary" href="${escapeHtml(bnUrl)}" target="_blank" rel="noopener noreferrer">
+          Barnes &amp; Noble
+        </a>
+        <button class="no-prime-btn no-prime-btn-dismiss" title="Dismiss">✕</button>
+      </div>
+    </div>
+  `;
+
+  banner.querySelector(".no-prime-btn-dismiss").addEventListener("click", () => {
+    banner.remove();
+  });
+
+  document.body.prepend(banner);
+}
+
+/**
+ * Inject a warning banner for products from brands with gibberish names
+ * that are likely cheap Amazon-only sellers.
+ */
+function injectSuspectBanner(product, redirectUrl) {
+  document.getElementById("no-prime-banner")?.remove();
+
+  const banner = document.createElement("div");
+  banner.id = "no-prime-banner";
+  banner.className = "no-prime-warning";
+  banner.setAttribute("role", "alert");
+
+  const brandLabel = escapeHtml(product.brand || "This brand");
+
+  banner.innerHTML = `
+    <div class="no-prime-content">
+      <span class="no-prime-msg">
+        <strong>${brandLabel}</strong> doesn't appear to be a well-known manufacturer.
+        Consider researching before buying.
+      </span>
+      <div class="no-prime-actions">
+        <a class="no-prime-btn no-prime-btn-primary" href="${escapeHtml(redirectUrl)}" target="_blank" rel="noopener noreferrer">
+          Search on DuckDuckGo
+        </a>
+        <button class="no-prime-btn no-prime-btn-dismiss" title="Dismiss">✕</button>
+      </div>
+    </div>
+  `;
+
   banner.querySelector(".no-prime-btn-dismiss").addEventListener("click", () => {
     banner.remove();
   });
@@ -127,26 +225,37 @@ function observeSoftNavigation() {
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.type === "QUERY_PRODUCT") {
-    const { extractProductInfo, lookupBrand, buildRedirectUrl, buildSearchFallbackUrl } = window.NoPrime;
+    const { extractProductInfo, lookupBrand, buildRedirectUrl, buildSearchFallbackUrl,
+            buildBarnesNobleUrl, buildLocalBookstoreUrl } = window.NoPrime;
     const product = extractProductInfo();
     if (!product.title) {
       sendResponse(null);
       return true;
     }
 
-    const storeEntry = lookupBrand(product.brand);
     let redirectUrl;
     let matchType;
+    let storeBrand = null;
 
-    if (storeEntry) {
-      redirectUrl = buildRedirectUrl(storeEntry, product.title);
-      matchType = "exact";
+    if (product.isBook) {
+      redirectUrl = buildBarnesNobleUrl(product.isbn, product.title);
+      matchType = "book";
     } else {
-      redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
-      matchType = "search-fallback";
+      const storeEntry = lookupBrand(product.brand);
+      if (storeEntry) {
+        redirectUrl = buildRedirectUrl(storeEntry, product.title);
+        matchType = "brand";
+        storeBrand = storeEntry.brand;
+      } else if (window.NoPrime.isSuspectBrand(product.brand)) {
+        redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
+        matchType = "suspect-brand";
+      } else {
+        redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
+        matchType = "search-fallback";
+      }
     }
 
-    const payload = { ...product, redirectUrl, matchType, storeBrand: storeEntry?.brand || null };
+    const payload = { ...product, redirectUrl, matchType, storeBrand };
 
     // Also update the background cache while we're at it
     chrome.runtime.sendMessage({ type: "PRODUCT_DETECTED", payload });
@@ -155,18 +264,13 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     return true;
   }
 
-  // Live toggle: show / hide the banner without reloading
+  // Live toggle: remove or re-inject the banner without reloading
   if (msg.type === "ENABLED_CHANGED") {
-    const banner = document.getElementById("no-prime-banner");
     if (msg.enabled) {
-      // Re-run if there's no banner yet
-      if (!banner) {
-        window.__noPrimeInjected = false;
-        init();
-      }
+      window.__noPrimeInjected = false;
+      init();
     } else {
-      // Remove the banner immediately
-      banner?.remove();
+      document.getElementById("no-prime-banner")?.remove();
     }
   }
 });

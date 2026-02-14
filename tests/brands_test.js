@@ -20,17 +20,9 @@
 const fs = require("fs");
 const path = require("path");
 
-let chromium;
-try {
-  const { chromium: stealthChromium } = require("playwright-extra");
-  const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-  stealthChromium.use(StealthPlugin());
-  chromium = stealthChromium;
-  console.log("   Using: playwright-extra + stealth plugin\n");
-} catch {
-  ({ chromium } = require("playwright"));
-  console.log("   Using: plain playwright (install playwright-extra for better WAF bypass)\n");
-}
+const { chromium } = require("playwright-extra");
+const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+chromium.use(StealthPlugin());
 
 // Suppress unhandled promise rejections from the stealth plugin.
 // When we force-close a BrowserContext via the hard timeout, the stealth

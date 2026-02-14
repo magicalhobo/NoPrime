@@ -25,14 +25,16 @@ window.NoPrime = window.NoPrime || {};
 
 // Add entries alphabetically.
 const BRAND_STORE_MAP = {
-  // ── A ──
+  // A
   "adidas": { url: "https://www.adidas.com", searchTemplate: "https://www.adidas.com/us/search?q={query}" },
   "allbirds": { url: "https://www.allbirds.com", searchTemplate: "https://www.allbirds.com/search?q={query}" },
   "anker": { url: "https://www.anker.com", searchTemplate: "https://www.anker.com/search?q={query}" },
   "apple": { url: "https://www.apple.com", searchTemplate: "https://www.apple.com/shop/search/{query}" },
   "asics": { url: "https://www.asics.com", searchTemplate: "https://www.asics.com/us/en-us/search?q={query}" },
+  "asus": { url: "https://www.asus.com", searchTemplate: "https://www.asus.com/us/searchall/?searchKey={query}" },
 
-  // ── B ──
+  // B
+  "bmw": { url: "https://www.bmw.com", searchTemplate: null },
   "beats": { url: "https://www.beatsbydre.com", searchTemplate: null },
   "birkenstock": { url: "https://www.birkenstock.com", searchTemplate: "https://www.birkenstock.com/us/search?q={query}" },
   "black+decker": { url: "https://www.blackanddecker.com", searchTemplate: "https://www.blackanddecker.com/search?query={query}" },
@@ -41,7 +43,7 @@ const BRAND_STORE_MAP = {
   "brooks": { url: "https://www.brooksrunning.com", searchTemplate: "https://www.brooksrunning.com/en_us/search-result?q={query}" },
   "brother": { url: "https://www.brother-usa.com", searchTemplate: "https://www.brother-usa.com/search#q={query}" },
 
-  // ── C ──
+  // C
   "canon": { url: "https://www.usa.canon.com", searchTemplate: "https://www.usa.canon.com/search?q={query}" },
   "carhartt": { url: "https://www.carhartt.com", searchTemplate: "https://www.carhartt.com/search?q={query}" },
   "casper": { url: "https://casper.com", searchTemplate: "https://casper.com/search/?q={query}" },
@@ -52,78 +54,83 @@ const BRAND_STORE_MAP = {
   "corsair": { url: "https://www.corsair.com", searchTemplate: "https://www.corsair.com/us/en/search?query={query}" },
   "crocs": { url: "https://www.crocs.com", searchTemplate: "https://www.crocs.com/search?q={query}" },
 
-  // ── D ──
+  // D
   "dell": { url: "https://www.dell.com", searchTemplate: "https://www.dell.com/en-us/search/{query}" },
   "dewalt": { url: "https://www.dewalt.com", searchTemplate: "https://www.dewalt.com/search?query={query}" },
   "dickies": { url: "https://www.dickies.com", searchTemplate: "https://www.dickies.com/search?q={query}" },
+  "dkny": { url: "https://www.dkny.com", searchTemplate: "https://www.dkny.com/search?q={query}" },
   "dr. martens": { url: "https://www.drmartens.com", searchTemplate: "https://www.drmartens.com/us/en/search?q={query}" },
   "dyson": { url: "https://www.dyson.com", searchTemplate: "https://www.dyson.com/search?q={query}" },
 
-  // ── E ──
+  // E
   "epson": { url: "https://epson.com", searchTemplate: "https://epson.com/search/?text={query}" },
 
-  // ── F ──
+  // F
   "filson": { url: "https://www.filson.com", searchTemplate: "https://www.filson.com/catalogsearch/result/?q={query}" },
   "fjallraven": { url: "https://www.fjallraven.com", searchTemplate: "https://www.fjallraven.com/us/en-us/search?q={query}" },
   "fujifilm": { url: "https://www.fujifilm.com", searchTemplate: "https://www.fujifilm.com/us/en/search?q={query}" },
 
-  // ── G ──
+  // G
+  "gap": { url: "https://www.gap.com", searchTemplate: "https://www.gap.com/browse/search.do?searchText={query}" },
   "garmin": { url: "https://www.garmin.com", searchTemplate: "https://www.garmin.com/en-US/search/?query={query}" },
   "gibson": { url: "https://www.gibson.com", searchTemplate: "https://www.gibson.com/search?q={query}" },
   "gopro": { url: "https://gopro.com", searchTemplate: null },
   "gregory": { url: "https://www.gregorypacks.com", searchTemplate: "https://www.gregorypacks.com/search?q={query}" },
 
-  // ── H ──
+  // H
   "hanes": { url: "https://www.hanes.com", searchTemplate: "https://www.hanes.com/search?q={query}" },
   "hp": { url: "https://www.hp.com", searchTemplate: "https://www.hp.com/us-en/shop/sitesearch?keyword={query}" },
   "hydro flask": { url: "https://www.hydroflask.com", searchTemplate: "https://www.hydroflask.com/catalogsearch/result/?q={query}" },
   "hoka": { url: "https://www.hoka.com", searchTemplate: "https://www.hoka.com/en/us/search?q={query}" },
 
-  // ── I ──
+  // I
+  "ikea": { url: "https://www.ikea.com", searchTemplate: "https://www.ikea.com/us/en/search/?q={query}" },
   "instant pot": { url: "https://instantpot.com", searchTemplate: "https://instantpot.com/search?q={query}&type=product" },
 
-  // ── J ──
+  // J
   "jabra": { url: "https://www.jabra.com", searchTemplate: "https://www.jabra.com/search#{query}" },
   "jbl": { url: "https://www.jbl.com", searchTemplate: "https://www.jbl.com/search?q={query}" },
 
-  // ── K ──
+  // K
   "keen": { url: "https://www.keenfootwear.com", searchTemplate: "https://www.keenfootwear.com/search/?q={query}" },
   "kitchenaid": { url: "https://www.kitchenaid.com", searchTemplate: null },
 
-  // ── L ──
+  // L
   "la sportiva": { url: "https://www.lasportiva.com", searchTemplate: "https://www.lasportiva.com/en/catalogsearch/result/?q={query}" },
   "le creuset": { url: "https://www.lecreuset.com", searchTemplate: "https://www.lecreuset.com/search?q={query}" },
+  "lego": { url: "https://www.lego.com", searchTemplate: "https://www.lego.com/en-us/search?q={query}" },
   "lenny & larry's": { url: "https://www.lennylarry.com", searchTemplate: "https://www.lennylarry.com/search?q={query}" },
   "lenovo": { url: "https://www.lenovo.com", searchTemplate: "https://www.lenovo.com/us/en/search?fq=&text={query}/" },
   "levi's": { url: "https://www.levi.com", searchTemplate: "https://www.levi.com/US/en_US/search/{query}" },
+  "lg": { url: "https://www.lg.com", searchTemplate: "https://www.lg.com/us/search/search-all?search={query}" },
   "lodge": { url: "https://www.lodgecastiron.com", searchTemplate: "https://www.lodgecastiron.com/search?q={query}" },
   "logitech": { url: "https://www.logitech.com", searchTemplate: "https://www.logitech.com/en-us/search?query={query}" },
 
-  // ── M ──
+  // M
   "merrell": { url: "https://www.merrell.com", searchTemplate: "https://www.merrell.com/US/en/search?q={query}" },
   "milwaukee": { url: "https://www.milwaukeetool.com", searchTemplate: "https://www.milwaukeetool.com/Search?query={query}" },
 
-  // ── N ──
+  // N
   "new balance": { url: "https://www.newbalance.com", searchTemplate: "https://www.newbalance.com/search/?q={query}" },
   "nike": { url: "https://www.nike.com", searchTemplate: "https://www.nike.com/w?q={query}" },
   "ninja": { url: "https://www.ninjakitchen.com", searchTemplate: "https://www.ninjakitchen.com/search?q={query}" },
   "nintendo": { url: "https://www.nintendo.com", searchTemplate: "https://www.nintendo.com/us/search/#q={query}" },
 
-  // ── O ──
+  // O
   "osprey": { url: "https://www.osprey.com", searchTemplate: "https://www.osprey.com/catalogsearch/result/?q={query}" },
   "oxo": { url: "https://www.oxo.com", searchTemplate: "https://www.oxo.com/catalogsearch/result/?q={query}" },
 
-  // ── P ──
+  // P
   "patagonia": { url: "https://www.patagonia.com", searchTemplate: "https://www.patagonia.com/search/?q={query}" },
   "philips": { url: "https://www.usa.philips.com", searchTemplate: "https://www.usa.philips.com/c-w/search.html#q={query}" },
   "puma": { url: "https://us.puma.com", searchTemplate: "https://us.puma.com/us/en/search?q={query}" },
 
-  // ── R ──
+  // R
   "razor": { url: "https://www.razer.com", searchTemplate: "https://www.razer.com/search/{query}" },
   "reebok": { url: "https://www.reebok.com", searchTemplate: "https://www.reebok.com/search?q={query}" },
   "rei": { url: "https://www.rei.com", searchTemplate: "https://www.rei.com/search?q={query}" },
 
-  // ── S ──
+  // S
   "samsung": { url: "https://www.samsung.com", searchTemplate: "https://www.samsung.com/us/search/searchMain?searchTerm={query}" },
   "saucony": { url: "https://www.saucony.com", searchTemplate: "https://www.saucony.com/en/search?q={query}" },
   "sennheiser": { url: "https://www.sennheiser.com", searchTemplate: null },
@@ -132,24 +139,25 @@ const BRAND_STORE_MAP = {
   "sony": { url: "https://www.sony.com", searchTemplate: "https://www.sony.com/en/search?q={query}" },
   "stanley": { url: "https://www.stanley1913.com", searchTemplate: "https://www.stanley1913.com/search?q={query}" },
 
-  // ── T ──
+  // T
   "the north face": { url: "https://www.thenorthface.com", searchTemplate: "https://www.thenorthface.com/en-us/search?q={query}" },
   "timberland": { url: "https://www.timberland.com", searchTemplate: "https://www.timberland.com/search?q={query}" },
 
-  // ── U ──
+  // U
   "under armour": { url: "https://www.underarmour.com", searchTemplate: "https://www.underarmour.com/en-us/search?q={query}" },
+  "ugg": { url: "https://www.ugg.com", searchTemplate: "https://www.ugg.com/search?q={query}" },
 
-  // ── V ──
+  // V
   "vans": { url: "https://www.vans.com", searchTemplate: "https://www.vans.com/search?q={query}" },
   "vitamix": { url: "https://www.vitamix.com", searchTemplate: "https://www.vitamix.com/search?q={query}" },
 
-  // ── W ──
+  // W
   "wrangler": { url: "https://www.wrangler.com", searchTemplate: "https://www.wrangler.com/search?q={query}" },
 
-  // ── Y ──
+  // Y
   "yeti": { url: "https://www.yeti.com", searchTemplate: "https://www.yeti.com/search?q={query}" },
 
-  // ── Z ──
+  // Z
   "zwilling": { url: "https://www.zwilling.com", searchTemplate: "https://www.zwilling.com/us/search?q={query}" },
 };
 
@@ -220,6 +228,18 @@ const BRAND_ALIASES = {
   "yeti holdings": "yeti",
   "zwilling j.a. henckels": "zwilling",
   "henckels": "zwilling",
+  "asus computer": "asus",
+  "asus tek": "asus",
+  "bmw motorsport": "bmw",
+  "donna karan": "dkny",
+  "donna karan new york": "dkny",
+  "gap inc": "gap",
+  "old navy": "gap",
+  "lg electronics": "lg",
+  "lego group": "lego",
+  "lego systems": "lego",
+  "ugg australia": "ugg",
+  "deckers outdoor": "ugg",
 };
 
 /**
@@ -293,4 +313,55 @@ window.NoPrime.buildSearchFallbackUrl = function buildSearchFallbackUrl(brand, p
 
   const q = encodeURIComponent(parts.join(" "));
   return `https://duckduckgo.com/?q=${q}`;
+};
+
+/**
+ * Build a Barnes & Noble URL for a book.
+ *
+ * If we have an ISBN we deep-link directly; otherwise we search by title.
+ *
+ * @param {string|null} isbn ISBN-13 or ISBN-10
+ * @param {string} title  product / book title
+ * @returns {string}
+ */
+window.NoPrime.buildBarnesNobleUrl = function buildBarnesNobleUrl(isbn, title) {
+  if (isbn) {
+    return `https://www.barnesandnoble.com/w/?ean=${encodeURIComponent(isbn)}`;
+  }
+  const q = encodeURIComponent((title || "").slice(0, 80).trim());
+  return `https://www.barnesandnoble.com/s/${q}`;
+};
+
+/**
+ * Build a DuckDuckGo search URL to help the user find local bookstores
+ * that carry this title.
+ *
+ * @param {string} title  book title
+ * @returns {string}
+ */
+window.NoPrime.buildLocalBookstoreUrl = function buildLocalBookstoreUrl(title) {
+  const q = encodeURIComponent(
+    `"${(title || "").slice(0, 60).trim()}" local bookstores`
+  );
+  return `https://duckduckgo.com/?q=${q}`;
+};
+
+/**
+ * Detect suspect brand names.
+ *
+ * Legitimate brands almost never register their name in ALL CAPS on Amazon.
+ * Cheap Amazon-only sellers frequently do (e.g. "BSTOEM", "TGKXT", "KOORUI").
+ * Known all-caps brands like LEGO, ASICS, and ASUS are in the brand map and
+ * will be matched before this function is reached.
+ *
+ * @param {string} name  brand name as it appears on the Amazon page
+ * @returns {boolean}
+ */
+window.NoPrime.isSuspectBrand = function isSuspectBrand(name) {
+  if (!name) return false;
+
+  const alpha = name.replace(/[^a-zA-Z]/g, "");
+  if (alpha.length < 4) return false; // too short to judge
+
+  return alpha === alpha.toUpperCase();
 };

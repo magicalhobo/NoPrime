@@ -13,9 +13,8 @@ const sharp = require("sharp");
 const path = require("path");
 
 const SIZES = [16, 48, 128];
-const ROOT = path.resolve(__dirname, "..");
-const SVG = path.join(ROOT, "logo.svg");
-const OUT = path.join(ROOT, "extension", "icons");
+const SVG = path.join("logo.svg");
+const OUT = path.join("extension", "icons");
 
 async function main() {
   for (const size of SIZES) {
@@ -27,7 +26,7 @@ async function main() {
     await base
       .clone()
       .grayscale()
-      .modulate({ brightness: 0.75 })
+      .modulate({ brightness: 0.5 })
       .png()
       .toFile(path.join(OUT, `icon${size}-disabled.png`));
     console.log(`✓ icon${size}-disabled.png`);
