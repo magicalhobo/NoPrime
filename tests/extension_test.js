@@ -47,8 +47,8 @@ const PAGES = {
     url: "https://www.amazon.com/Sony-WH-1000XM5-Canceling-Headphones-Hands-Free/dp/B09XS7JWHH",
   },
   fallback: {
-    name: "Fallback (Honeywell air purifier)",
-    url: "https://www.amazon.com/Honeywell-HPA300-Room-Allergen-Remover/dp/B00BWYO53G",
+    name: "Fallback (Raspberry Pi 4)",
+    url: "https://www.amazon.com/Raspberry-Pi-Computer-Suitable-Workstation/dp/B0899VXM8F",
   },
   suspect: {
     name: "Suspect (LEVOIT air purifier)",

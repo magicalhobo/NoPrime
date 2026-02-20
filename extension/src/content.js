@@ -19,14 +19,33 @@ if (!window.__noPrimeInjected) {
   init();
 }
 
-function capitalize(s) {
-  return s.replace(/(?:^|\s)\S/g, c => c.toUpperCase());
+/** Create an element with optional className and textContent. */
+function el(tag, className, text) {
+  const e = document.createElement(tag);
+  if (className) e.className = className;
+  if (text) e.textContent = text;
+  return e;
 }
 
-function escapeHtml(str) {
-  const d = document.createElement("div");
-  d.textContent = str;
-  return d.innerHTML;
+/** Create a <strong> element. */
+function strong(text) {
+  return el("strong", null, text);
+}
+
+/** Create an <a> element styled as a button. */
+function linkBtn(className, href, label) {
+  const a = el("a", className, label);
+  a.href = href;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  return a;
+}
+
+/** Create the dismiss (✕) button. */
+function dismissBtn() {
+  const btn = el("button", "no-prime-btn no-prime-btn-dismiss", "✕");
+  btn.title = "Dismiss";
+  return btn;
 }
 
 async function init() {
@@ -95,26 +114,35 @@ function injectBanner(product, redirectUrl, matchType, storeEntry) {
   if (matchType === "search-fallback") banner.classList.add("no-prime-fallback");
   banner.setAttribute("role", "alert");
 
-  const brandLabel = storeEntry?.brand
-    ? capitalize(storeEntry.brand)
-    : product.brand || "the manufacturer";
+  const brandLabel = product.brand || "the manufacturer";
+  const isAlternate = storeEntry && storeEntry.store;
 
-  const message =
-    matchType === "brand"
-      ? `This product may be available directly from <strong>${brandLabel}</strong>.`
-      : `We couldn't find the store for <strong>${brandLabel}</strong>, but you can search online.`;
+  // Build message span
+  const msg = el("span", "no-prime-msg");
+  if (isAlternate) {
+    msg.append("This ", strong(brandLabel), " product may be available at ", strong(storeEntry.store), ".");
+  } else if (matchType === "brand") {
+    msg.append("This product may be available directly from ", strong(brandLabel), ".");
+  } else {
+    msg.append("We couldn't find the store for ", strong(brandLabel), ", but you can search online.");
+  }
 
-  banner.innerHTML = `
-    <div class="no-prime-content">
-      <span class="no-prime-msg">${message}</span>
-      <div class="no-prime-actions">
-        <a class="no-prime-btn no-prime-btn-primary" href="${escapeHtml(redirectUrl)}" target="_blank" rel="noopener noreferrer">
-          ${matchType === "brand" ? "Go to " + escapeHtml(capitalize(brandLabel)) : "Search on DuckDuckGo"}
-        </a>
-        <button class="no-prime-btn no-prime-btn-dismiss" title="Dismiss">✕</button>
-      </div>
-    </div>
-  `;
+  const buttonLabel = isAlternate
+    ? "Search " + storeEntry.store
+    : matchType === "brand"
+      ? "Go to " + brandLabel
+      : "Search on DuckDuckGo";
+
+  // Build actions
+  const actions = el("div", "no-prime-actions");
+  actions.append(
+    linkBtn("no-prime-btn no-prime-btn-primary", redirectUrl, buttonLabel),
+    dismissBtn(),
+  );
+
+  const content = el("div", "no-prime-content");
+  content.append(msg, actions);
+  banner.append(content);
 
   // Dismiss handler
   banner.querySelector(".no-prime-btn-dismiss").addEventListener("click", () => {
@@ -136,24 +164,18 @@ function injectBookBanner(product, bnUrl, localUrl) {
   banner.id = "no-prime-banner";
   banner.setAttribute("role", "alert");
 
-  const title = escapeHtml(product.title.slice(0, 80));
+  const msg = el("span", "no-prime-msg", "This book may be available from other booksellers.");
 
-  banner.innerHTML = `
-    <div class="no-prime-content">
-      <span class="no-prime-msg">
-        This book may be available from other booksellers.
-      </span>
-      <div class="no-prime-actions">
-        <a class="no-prime-btn no-prime-btn-primary" href="${escapeHtml(localUrl)}" target="_blank" rel="noopener noreferrer">
-          Find Local Bookstores
-        </a>
-        <a class="no-prime-btn no-prime-btn-secondary" href="${escapeHtml(bnUrl)}" target="_blank" rel="noopener noreferrer">
-          Barnes &amp; Noble
-        </a>
-        <button class="no-prime-btn no-prime-btn-dismiss" title="Dismiss">✕</button>
-      </div>
-    </div>
-  `;
+  const actions = el("div", "no-prime-actions");
+  actions.append(
+    linkBtn("no-prime-btn no-prime-btn-primary", localUrl, "Find Local Bookstores"),
+    linkBtn("no-prime-btn no-prime-btn-secondary", bnUrl, "Barnes & Noble"),
+    dismissBtn(),
+  );
+
+  const content = el("div", "no-prime-content");
+  content.append(msg, actions);
+  banner.append(content);
 
   banner.querySelector(".no-prime-btn-dismiss").addEventListener("click", () => {
     banner.remove();
@@ -174,22 +196,23 @@ function injectSuspectBanner(product, redirectUrl) {
   banner.className = "no-prime-warning";
   banner.setAttribute("role", "alert");
 
-  const brandLabel = escapeHtml(product.brand || "This brand");
+  const brandLabel = product.brand || "This brand";
 
-  banner.innerHTML = `
-    <div class="no-prime-content">
-      <span class="no-prime-msg">
-        <strong>${brandLabel}</strong> doesn't appear to be a well-known manufacturer.
-        Consider researching before buying.
-      </span>
-      <div class="no-prime-actions">
-        <a class="no-prime-btn no-prime-btn-primary" href="${escapeHtml(redirectUrl)}" target="_blank" rel="noopener noreferrer">
-          Search on DuckDuckGo
-        </a>
-        <button class="no-prime-btn no-prime-btn-dismiss" title="Dismiss">✕</button>
-      </div>
-    </div>
-  `;
+  const msg = el("span", "no-prime-msg");
+  msg.append(
+    strong(brandLabel),
+    " doesn't appear to be a well-known manufacturer. Consider researching before buying.",
+  );
+
+  const actions = el("div", "no-prime-actions");
+  actions.append(
+    linkBtn("no-prime-btn no-prime-btn-primary", redirectUrl, "Search on DuckDuckGo"),
+    dismissBtn(),
+  );
+
+  const content = el("div", "no-prime-content");
+  content.append(msg, actions);
+  banner.append(content);
 
   banner.querySelector(".no-prime-btn-dismiss").addEventListener("click", () => {
     banner.remove();
