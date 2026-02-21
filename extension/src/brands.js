@@ -1159,6 +1159,10 @@ const MANUFACTURER_STORE_MAP = {
     "url": "https://nzxt.com",
     "searchTemplate": "https://nzxt.com/search?q={query}"
   },
+  "o'neill": {
+    "url": "https://www.oneill.com",
+    "searchTemplate": "https://us.oneill.com/search?q={query}"
+  },
   "oakley": {
     "url": "https://www.oakley.com",
     "searchTemplate": "https://www.oakley.com/en-us/search?q={query}"
