@@ -49,8 +49,8 @@ function dismissBtn() {
 }
 
 async function init() {
-  // Respect user preference
-  const { enabled } = await chrome.storage.sync.get({ enabled: true });
+  // Respect user preferences
+  const { enabled, searchEngine } = await chrome.storage.sync.get({ enabled: true, searchEngine: "duckduckgo" });
   if (!enabled) return;
 
   const { extractProductInfo, lookupBrand, buildRedirectUrl, buildSearchFallbackUrl,
@@ -61,7 +61,7 @@ async function init() {
 
   if (product.isBook) {
     const bnUrl    = buildBarnesNobleUrl(product.isbn, product.title);
-    const localUrl = buildLocalBookstoreUrl(product.title);
+    const localUrl = buildLocalBookstoreUrl(product.title, searchEngine);
 
     chrome.runtime.sendMessage({
       type: "PRODUCT_DETECTED",
@@ -82,10 +82,10 @@ async function init() {
     redirectUrl = buildRedirectUrl(storeEntry, product.title);
     matchType = "brand";
   } else if (isSuspectBrand(product.brand)) {
-    redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
+    redirectUrl = buildSearchFallbackUrl(product.brand, product.title, searchEngine);
     matchType = "suspect-brand";
   } else {
-    redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
+    redirectUrl = buildSearchFallbackUrl(product.brand, product.title, searchEngine);
     matchType = "search-fallback";
   }
 
@@ -96,16 +96,16 @@ async function init() {
   });
 
   if (matchType === "suspect-brand") {
-    injectSuspectBanner(product, redirectUrl);
+    injectSuspectBanner(product, redirectUrl, searchEngine);
   } else {
-    injectBanner(product, redirectUrl, matchType, storeEntry);
+    injectBanner(product, redirectUrl, matchType, storeEntry, searchEngine);
   }
 
   // Watch for Amazon's soft navigation (SPA-like page transitions)
   observeSoftNavigation();
 }
 
-function injectBanner(product, redirectUrl, matchType, storeEntry) {
+function injectBanner(product, redirectUrl, matchType, storeEntry, searchEngine) {
   // Remove any existing banner first
   document.getElementById("no-prime-banner")?.remove();
 
@@ -127,18 +127,31 @@ function injectBanner(product, redirectUrl, matchType, storeEntry) {
     msg.append("We couldn't find the store for ", strong(brandLabel), ", but you can search online.");
   }
 
+  const { SEARCH_ENGINE_LABELS } = window.NoPrime;
+  const searchLabel = "Search on " + (SEARCH_ENGINE_LABELS[searchEngine] || "DuckDuckGo");
+
   const buttonLabel = isAlternate
     ? "Search " + storeEntry.store
     : matchType === "brand"
       ? "Go to " + brandLabel
-      : "Search on DuckDuckGo";
+      : searchLabel;
 
   // Build actions
   const actions = el("div", "no-prime-actions");
   actions.append(
     linkBtn("no-prime-btn no-prime-btn-primary", redirectUrl, buttonLabel),
-    dismissBtn(),
   );
+
+  // Always offer a web search as a secondary option
+  if (matchType !== "search-fallback") {
+    const { buildSearchFallbackUrl } = window.NoPrime;
+    const searchUrl = buildSearchFallbackUrl(product.brand, product.title, searchEngine);
+    actions.append(
+      linkBtn("no-prime-btn no-prime-btn-secondary", searchUrl, searchLabel),
+    );
+  }
+
+  actions.append(dismissBtn());
 
   const content = el("div", "no-prime-content");
   content.append(msg, actions);
@@ -188,7 +201,7 @@ function injectBookBanner(product, bnUrl, localUrl) {
  * Inject a warning banner for products from brands with gibberish names
  * that are likely cheap Amazon-only sellers.
  */
-function injectSuspectBanner(product, redirectUrl) {
+function injectSuspectBanner(product, redirectUrl, searchEngine) {
   document.getElementById("no-prime-banner")?.remove();
 
   const banner = document.createElement("div");
@@ -197,6 +210,8 @@ function injectSuspectBanner(product, redirectUrl) {
   banner.setAttribute("role", "alert");
 
   const brandLabel = product.brand || "This brand";
+  const { SEARCH_ENGINE_LABELS } = window.NoPrime;
+  const searchLabel = "Search on " + (SEARCH_ENGINE_LABELS[searchEngine] || "DuckDuckGo");
 
   const msg = el("span", "no-prime-msg");
   msg.append(
@@ -206,7 +221,7 @@ function injectSuspectBanner(product, redirectUrl) {
 
   const actions = el("div", "no-prime-actions");
   actions.append(
-    linkBtn("no-prime-btn no-prime-btn-primary", redirectUrl, "Search on DuckDuckGo"),
+    linkBtn("no-prime-btn no-prime-btn-primary", redirectUrl, searchLabel),
     dismissBtn(),
   );
 
@@ -256,35 +271,36 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
       return true;
     }
 
-    let redirectUrl;
-    let matchType;
-    let storeBrand = null;
+    // Read search engine preference for fallback URLs
+    chrome.storage.sync.get({ searchEngine: "duckduckgo" }, ({ searchEngine }) => {
+      let redirectUrl;
+      let matchType;
+      let storeBrand = null;
 
-    if (product.isBook) {
-      redirectUrl = buildBarnesNobleUrl(product.isbn, product.title);
-      matchType = "book";
-    } else {
-      const storeEntry = lookupBrand(product.brand);
-      if (storeEntry) {
-        redirectUrl = buildRedirectUrl(storeEntry, product.title);
-        matchType = "brand";
-        storeBrand = storeEntry.brand;
-      } else if (window.NoPrime.isSuspectBrand(product.brand)) {
-        redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
-        matchType = "suspect-brand";
+      if (product.isBook) {
+        redirectUrl = buildBarnesNobleUrl(product.isbn, product.title);
+        matchType = "book";
       } else {
-        redirectUrl = buildSearchFallbackUrl(product.brand, product.title);
-        matchType = "search-fallback";
+        const storeEntry = lookupBrand(product.brand);
+        if (storeEntry) {
+          redirectUrl = buildRedirectUrl(storeEntry, product.title);
+          matchType = "brand";
+          storeBrand = storeEntry.brand;
+        } else if (window.NoPrime.isSuspectBrand(product.brand)) {
+          redirectUrl = buildSearchFallbackUrl(product.brand, product.title, searchEngine);
+          matchType = "suspect-brand";
+        } else {
+          redirectUrl = buildSearchFallbackUrl(product.brand, product.title, searchEngine);
+          matchType = "search-fallback";
+        }
       }
-    }
 
-    const payload = { ...product, redirectUrl, matchType, storeBrand };
+      const payload = { ...product, redirectUrl, matchType, storeBrand };
+      chrome.runtime.sendMessage({ type: "PRODUCT_DETECTED", payload });
+      sendResponse(payload);
+    });
 
-    // Also update the background cache while we're at it
-    chrome.runtime.sendMessage({ type: "PRODUCT_DETECTED", payload });
-
-    sendResponse(payload);
-    return true;
+    return true; // keep message channel open for async response
   }
 
   // Live toggle: remove or re-inject the banner without reloading

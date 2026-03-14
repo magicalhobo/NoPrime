@@ -71,6 +71,10 @@ const MANUFACTURER_STORE_MAP = {
     "url": "https://www.aersf.com",
     "searchTemplate": "https://www.aersf.com/search?q={query}"
   },
+  "aerogarden": {
+    "url": "https://www.aerogarden.com",
+    "searchTemplate": null
+  },
   "aeropress": {
     "url": "https://aeropress.com",
     "searchTemplate": "https://aeropress.com/search?q={query}"
@@ -1864,14 +1868,38 @@ window.NoPrime.buildRedirectUrl = function buildRedirectUrl(storeEntry, productT
  * @param {string} productTitle product title
  * @returns {string}
  */
-window.NoPrime.buildSearchFallbackUrl = function buildSearchFallbackUrl(brand, productTitle) {
+/**
+ * Search engine URL templates.
+ * Each value is a function that takes an encoded query string and returns a URL.
+ */
+window.NoPrime.SEARCH_ENGINES = {
+  duckduckgo: (q) => `https://duckduckgo.com/?q=${q}`,
+  google:     (q) => `https://www.google.com/search?q=${q}`,
+  bing:       (q) => `https://www.bing.com/search?q=${q}`,
+  brave:      (q) => `https://search.brave.com/search?q=${q}`,
+  startpage:  (q) => `https://www.startpage.com/sp/search?query=${q}`,
+  ecosia:     (q) => `https://www.ecosia.org/search?q=${q}`,
+};
+
+/** Human-readable labels for each search engine. */
+window.NoPrime.SEARCH_ENGINE_LABELS = {
+  duckduckgo: "DuckDuckGo",
+  google:     "Google",
+  bing:       "Bing",
+  brave:      "Brave Search",
+  startpage:  "Startpage",
+  ecosia:     "Ecosia",
+};
+
+window.NoPrime.buildSearchFallbackUrl = function buildSearchFallbackUrl(brand, productTitle, engine) {
   const parts = [];
   if (brand) parts.push(`"${brand}"`);
   if (productTitle) parts.push(productTitle.slice(0, 60));
   parts.push("-amazon");
 
   const q = encodeURIComponent(parts.join(" "));
-  return `https://duckduckgo.com/?q=${q}`;
+  const buildUrl = window.NoPrime.SEARCH_ENGINES[engine] || window.NoPrime.SEARCH_ENGINES.duckduckgo;
+  return buildUrl(q);
 };
 
 /**
@@ -1898,11 +1926,12 @@ window.NoPrime.buildBarnesNobleUrl = function buildBarnesNobleUrl(isbn, title) {
  * @param {string} title  book title
  * @returns {string}
  */
-window.NoPrime.buildLocalBookstoreUrl = function buildLocalBookstoreUrl(title) {
+window.NoPrime.buildLocalBookstoreUrl = function buildLocalBookstoreUrl(title, engine) {
   const q = encodeURIComponent(
     `"${(title || "").slice(0, 60).trim()}" local bookstores`
   );
-  return `https://duckduckgo.com/?q=${q}`;
+  const buildUrl = window.NoPrime.SEARCH_ENGINES[engine] || window.NoPrime.SEARCH_ENGINES.duckduckgo;
+  return buildUrl(q);
 };
 
 /**

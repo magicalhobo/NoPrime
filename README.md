@@ -46,6 +46,19 @@ The brand database lives in `extension/src/brands.js`. Each entry maps a lowerca
 "brand-name": { url: "https://www.brand.com", searchTemplate: "https://www.brand.com/search?q={query}" }
 ```
 
+## TODO
+
+* Show banner on search page when search matches store name
+* Map Amazon junk brands to the originals
+* Read from brands.json
+* Gather data from consumer reports and quality studies, e.g.
+    * https://arnika.org/en/publications/download/2128_f40ae4eb2e63e4dc3205035fb376d8e3
+* Other browsers
+    * Firefox
+    * Safari
+    * Opera
+    * Edge
+
 ## License
 
 MIT
